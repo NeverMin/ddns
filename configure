@@ -576,7 +576,7 @@ PACKAGE_NAME='"ddns"'
 PACKAGE_TARNAME='-ddns-'
 PACKAGE_VERSION='"1.0"'
 PACKAGE_STRING='"ddns" "1.0"'
-PACKAGE_BUGREPORT='"http://dev.a1983.com.cn"'
+PACKAGE_BUGREPORT='"https://github.com/nevermin/ddns/issues"'
 
 ac_unique_file="ddns.c"
 # Factoring default headers for most tests.
