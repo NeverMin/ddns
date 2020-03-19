@@ -1,0 +1,231 @@
+#
+#  Copyright (C) 2008-2010 K.R.F. Studio.
+#
+#  $Id: configure.in 296 2014-01-21 03:27:55Z kuang $
+#
+#  This file is part of 'ddns', Created by karl on 2008-03-26.
+#
+#  'ddns' is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published
+#  by the Free Software Foundation; either version 3 of the License,
+#  or (at your option) any later version.
+#
+#  'ddns' is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with 'ddns'; if not, write to the Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+AC_PREREQ(2.56)
+AC_INIT("ddns", "1.0", "http://dev.a1983.com.cn")
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE()
+AC_CONFIG_SRCDIR([ddns.c])
+AC_CONFIG_HEADER([config.h])
+
+# Checks for programs.
+AC_PROG_CC
+AC_CHECK_TOOL([RC], [windres], [no])
+
+AC_ARG_WITH(peanuthull,
+[  --without-peanuthull    disable oray peanuthull support (default=yes)],
+	if test x$withval = xno; then
+		want_peanuthull=no
+	else
+		want_peanuthull=yes
+	fi,
+	want_peanuthull=yes)
+
+AC_ARG_WITH(dyndns,
+[  --with-dyndns           enable dyndns support (default=yes)],
+	if test x$withval = xno; then
+		want_dyndns=no
+	else
+		want_dyndns=yes
+	fi,
+	want_dyndns=yes)
+
+AC_ARG_WITH(dnspod,
+[  --with-dnspod           enable dnspod support (default=yes)],
+	if test x$withval = xno; then
+		want_dnspod=no
+	else
+		want_dnspod=yes
+	fi,
+	want_dnspod=yes)
+
+AC_ARG_ENABLE(debug,
+[  --enable-debug          build debug version],
+	[
+	if test x$enableval = xno; then
+		enable_debug=no
+	else
+		enable_debug=yes
+	fi
+	] , [
+	enable_debug=no
+	])
+
+AC_ARG_ENABLE(daemon,
+[  --disable-daemon        disable daemon mode],
+	[
+	if test x$enableval = xno; then
+		enable_daemon_mode=no
+	else
+		enable_daemon_mode=yes
+	fi
+	case "$host_os" in
+		mingw*)
+			enable_daemon_mode=no
+			;;
+		*)
+			;;
+	esac
+	] , [
+	case "$host_os" in
+		darwin* | mingw*)
+			enable_daemon_mode=no
+			;;
+		*)
+			enable_daemon_mode=yes
+			;;
+	esac
+	])
+
+AC_ARG_ENABLE(ip-dnspod,
+[  --disable-ip-dnspod     DNSPod: disable getting IP address from www.dnspod.cn],
+	[
+	if test x$enableval = xno; then
+		enable_ip_dnspod=no
+	else
+		enable_ip_dnspod=yes
+	fi
+	] , [
+	enable_ip_dnspod=yes
+	])
+
+AC_ARG_ENABLE(ip-baidu,
+[  --disable-ip-baidu      DNSPod: disable getting IP address from www.baidu.com],
+	[
+	if test x$enableval = xno; then
+		enable_ip_baidu=no
+	else
+		enable_ip_baidu=yes
+	fi
+	] , [
+	enable_ip_baidu=yes
+	])
+
+AC_ARG_ENABLE(ip-ip138,
+[  --disable-ip-ip138      DNSPod: disable getting IP address from www.ip138.com],
+	[
+	if test x$enableval = xno; then
+		enable_ip_ip138=no
+	else
+		enable_ip_ip138=yes
+	fi
+	] , [
+	enable_ip_ip138=yes
+	])
+
+# Enable "Windows Service" mode if target OS is Windows
+case "$host_os" in
+	mingw*)
+		enable_service=yes
+		want_resource=yes
+		;;
+	*)
+		enable_service=no
+		want_resource=no
+		;;
+esac
+
+# Checks for libraries.
+AC_CHECK_LIB([pthread], [pthread_create], ,[
+		AC_CHECK_LIB([c_r], [pthread_create])
+	])
+AC_CHECK_LIB([m], [floor])
+AC_CHECK_LIB([ssl], [SSL_library_init], , , [-lcrypto])
+AC_CHECK_LIB([crypto], [SSLeay_version])
+case "$host_os" in
+	mingw*)
+		AC_CHECK_LIB([ws2_32], [_head_libws2_32_a])
+		AC_CHECK_LIB([wininet], [_head_libwininet_a])
+		;;
+	*)
+		;;
+esac
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_CHECK_HEADERS([limits.h])
+AC_CHECK_HEADERS([sys/time.h])
+AC_CHECK_HEADERS([netinet/in.h])
+AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_HEADERS([netdb.h])
+AC_CHECK_HEADERS([errno.h])
+AC_CHECK_HEADERS([sys/select.h])
+AC_CHECK_HEADERS([sys/socket.h])
+AC_CHECK_HEADERS([openssl/ssl.h])
+case "$host_os" in
+	mingw*)
+		AC_CHECK_HEADERS([winsock.h winsock2.h])
+		;;
+	*)
+		;;
+esac
+
+# Mingw API is missing these symbols from <wininet.h>
+case "$host_os" in
+	mingw*)
+		CFLAGS+=" -DINTERNET_STATUS_INTERMEDIATE_RESPONSE=120"
+		CFLAGS+=" -DINTERNET_STATUS_STATE_CHANGE=200"
+		;;
+	*)
+		;;
+esac
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+case "$host_os" in
+	mingw*)
+		;;
+	*)
+		AC_FUNC_MALLOC
+		;;
+esac
+AC_FUNC_MEMCMP
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([snprintf])
+AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([getch])
+
+AM_CONDITIONAL(want_peanuthull, [test x$want_peanuthull = xyes])
+AM_CONDITIONAL(want_dyndns,     [test x$want_dyndns = xyes])
+AM_CONDITIONAL(want_dnspod,     [test x$want_dnspod = xyes])
+AM_CONDITIONAL(enable_service,  [test x$enable_service = xyes])
+AM_CONDITIONAL(enable_debug,    [test x$enable_debug = xyes])
+AM_CONDITIONAL(enable_daemon_mode, [test x$enable_daemon_mode = xyes])
+AM_CONDITIONAL(want_resource,	[test x$want_resource = xyes])
+AM_CONDITIONAL(enable_ip_dnspod,[test x$enable_ip_dnspod = xyes])
+AM_CONDITIONAL(enable_ip_baidu, [test x$enable_ip_baidu = xyes])
+AM_CONDITIONAL(enable_ip_ip138, [test x$enable_ip_ip138 = xyes])
+
+echo "Building debug version ...... .......... : $enable_debug"
+echo "Building with daemon mode enabled ...... : $enable_daemon_mode"
+echo "Building with oray peanuthull support .. : $want_peanuthull"
+echo "Building with dyndns support ........... : $want_dyndns"
+echo "Building with dnspod support ........... : $want_dnspod"
+echo "Use www.dnspod.cn for dnspod protocol .. : $enable_ip_dnspod"
+echo "Use www.baidu.com for dnspod protocol .. : $enable_ip_baidu"
+echo "Use www.ip138.com for dnspod protocol .. : $enable_ip_ip138"
+
+AC_OUTPUT(Makefile)
