@@ -65,7 +65,7 @@
  *	Local Macros & Global Variables
  *============================================================================*/
 
-#define HTTP_USER_AGENT "crystal-http/1.0 (http://blog.a1983.com.cn)"
+#define HTTP_USER_AGENT "crystal-http/1.0 (github.com/NeverMin/ddns/issues)"
 #ifndef HTTP_VERSION
 #define HTTP_VERSION	"HTTP/1.1"
 #endif
